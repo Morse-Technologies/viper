@@ -1,5 +1,7 @@
 "use client";
+import { Activity } from "lucide-react";
 import { useState } from "react";
+import { CommissionSheet } from "@/features/commissioning/CommissionSheet";
 import { toast } from "sonner";
 import { useChannels, useSources, useThresholds } from "@/features/hooks";
 import type { Channel, Machine, Source, Threshold } from "@/lib/api/types";
@@ -21,6 +23,7 @@ export function ConfigTab({ machine }: { machine: Machine }) {
   const channels = useChannels(machine.id);
   const rows = thresholdsForMachine(thresholds.data ?? [], machine.id);
   const linked = (sources.data ?? []).filter((s) => s.machineIds.includes(machine.id));
+  const [commissioning, setCommissioning] = useState(false);
 
   return (
     <div className="flex flex-col gap-5">
@@ -40,7 +43,14 @@ export function ConfigTab({ machine }: { machine: Machine }) {
         {channels.isPending ? <LoadingRows rows={2} pitch="h-10" />
           : <ChannelRates channels={channels.data ?? []} />}
       </Card>
+      <Card id="points-h" title="Measurement points" detail>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-body text-muted">Add a vibration sensor step by step: mounting, geometry, a test capture and its baseline.</p>
+          <Button variant="outline" onClick={() => setCommissioning(true)}><Activity />Commission a point</Button>
+        </div>
+      </Card>
       <p className="text-small text-muted">Changes are audited.</p>
+      <CommissionSheet open={commissioning} onOpenChange={setCommissioning} machineId={machine.id} />
     </div>
   );
 }

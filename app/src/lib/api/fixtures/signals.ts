@@ -79,8 +79,12 @@ const P = { attributed: 0, shaft: 1, fault: 2, mesh: 2, harmonic: 3, family: 4 }
 
 export function spectrumFor(channelId: string): Spectrum {
   const ch = CHANNELS.find((c) => c.id === channelId)!;
-  const m = MACHINES.find((x) => x.id === ch.machineId)!;
-  const rpm = m.rpm ?? 1500;
+  return machineSpectrum(MACHINES.find((x) => x.id === ch.machineId)!, channelId);
+}
+
+/** The machine's spectrum as one channel on it would see it; `channelId` seeds the noise. `rpmOverride` follows the wizard. */
+export function machineSpectrum(m: Machine, channelId: string, rpmOverride?: number): Spectrum {
+  const rpm = rpmOverride ?? m.rpm ?? 1500;
   const f1 = rpm / 60;
   const rnd = seeded(hash(channelId));
   const faulty = m.health === "watch" || m.health === "alarm";

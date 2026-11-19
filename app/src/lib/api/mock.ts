@@ -1,6 +1,7 @@
 import { MOCK_NOW } from "@/lib/clock";
 import { ALERTS } from "./fixtures/alerts";
-import { AUDIT, digest, verifyChain } from "./fixtures/audit";
+import { AUDIT, appendAudit, digest, verifyChain } from "./fixtures/audit";
+import { BEARINGS, baseline, kurtogram, testCapture } from "./fixtures/commissioning";
 import { CAMERAS, DRIVERS, EDGE_DEVICES, LABEL_TASKS, LICENSE, MODELS, SOURCES, TAXONOMY } from "./fixtures/catalog";
 import { CHANNELS, SIGNALS, seriesFor, snippetsFor, spectrogramFor, spectrumFor } from "./fixtures/signals";
 import { GROUP_NAME, MACHINES, PLANTS, USERS } from "./fixtures/world";
@@ -15,11 +16,14 @@ const QUIET_LAG_SECONDS = 3600;
 const DEVIATING_LINES = 4;
 /** Verifying walks the whole chain; the mock takes long enough for the progress to read as work. */
 const VERIFY_MS = 900;
+/** A test capture records one second, then computes; the wait shows as progress. */
+const CAPTURE_MS = 1300;
 const MOCK_DAY = new Date(MOCK_NOW).toISOString().slice(0, 10);
 
 /** Writes change this in-memory copy only; a reload restores the snapshot. */
 const alerts: Alert[] = structuredClone(ALERTS);
 const doneTasks = new Set<Id>();
+const auditLog = structuredClone(AUDIT);
 
 const inPlant = <T extends { plantId: Id }>(rows: T[], plantId?: Id) => (plantId ? rows.filter((r) => r.plantId === plantId) : rows);
 const openIn = (plantId?: Id) => inPlant(alerts, plantId).filter((a) => a.status === "open" || a.status === "acknowledged");
@@ -106,10 +110,22 @@ export const mockApi: ViperApi = {
   thresholds: (plantId) => later(thresholds(plantId)),
   users: () => later(USERS),
   license: () => later(LICENSE),
-  audit: (plantId) => later(inPlant(AUDIT, plantId).slice().reverse()),
-  verifyAudit: (plantId) => new Promise((resolve) => setTimeout(() => resolve(verifyChain(inPlant(AUDIT, plantId))), VERIFY_MS)),
+  bearings: () => later(BEARINGS),
+  testCapture: (d) => new Promise((resolve) => setTimeout(() => resolve(testCapture(d)), CAPTURE_MS)),
+  kurtogram: (d) => later(kurtogram(d)),
+  startBaseline: (d) => {
+    const b = baseline(d);
+    const m = MACHINES.find((x) => x.id === d.machineId)!;
+    appendAudit(auditLog, m.plantId, {
+      at: b.startedAt, actorId: ME.id, actor: ME.name, action: "baseline.start", objectKind: "machine", ip: "10.20.4.31",
+      object: `${m.code} · ${d.position} ${d.axis}`, detail: `Commissioned; ${d.baselineDays}-day baseline started`,
+    });
+    return later(b);
+  },
+  audit: (plantId) => later(inPlant(auditLog, plantId).slice().reverse()),
+  verifyAudit: (plantId) => new Promise((resolve) => setTimeout(() => resolve(verifyChain(inPlant(auditLog, plantId))), VERIFY_MS)),
   exportAudit: (plantId, ids) => {
-    const rows = inPlant(AUDIT, plantId).filter((e) => ids.includes(e.id));
+    const rows = inPlant(auditLog, plantId).filter((e) => ids.includes(e.id));
     const body = JSON.stringify(rows, null, 2);
     return later({
       fileName: `viper-audit-${plantId}-${MOCK_DAY}.json`, entries: rows.length, body,

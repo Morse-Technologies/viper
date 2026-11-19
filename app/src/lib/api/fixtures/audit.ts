@@ -90,3 +90,14 @@ export function verifyChain(rows: AuditEvent[]): AuditChain {
     anchorHash: sealed.at(-1)?.hash ?? "", pending: sorted.length - sealed.length, brokenAt,
   };
 }
+
+/** Appends one entry to a plant's chain (the mock's writes), linked to the last digest. */
+export function appendAudit(rows: AuditEvent[], plantId: Id, e: Pick<AuditEvent, "at" | "actorId" | "actor" | "action" | "objectKind" | "object" | "detail" | "ip">): AuditEvent {
+  const last = rows.filter((r) => r.plantId === plantId).reduce<AuditEvent | null>((a, r) => (!a || r.seq > a.seq ? r : a), null);
+  const seq = (last?.seq ?? 0) + 1;
+  const prevHash = last?.hash ?? digest(`genesis-${plantId}`);
+  const body = { seq, at: e.at, actor: e.actorId ?? "system", action: e.action, object: e.object, detail: e.detail };
+  const entry: AuditEvent = { ...e, id: `aud-${plantId}-${seq}`, seq, plantId, prevHash, hash: digest(prevHash + JSON.stringify(body)), anchored: false };
+  rows.push(entry);
+  return entry;
+}

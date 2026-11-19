@@ -1,7 +1,7 @@
 "use client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useSyncExternalStore } from "react";
-import { api, type AlertStatus, type Feedback, type Id, type Range } from "@/lib/api";
+import { api, type AlertStatus, type CommissionDraft, type Feedback, type Id, type Range } from "@/lib/api";
 
 /* The plant in scope, remembered per browser. The group hub ignores it. */
 const PLANT_KEY = "viper-plant";
@@ -115,5 +115,16 @@ export function useCompleteLabelTask() {
   return useMutation({
     mutationFn: (v: { id: Id; classId: Id | null }) => api.completeLabelTask(v.id, v.classId),
     onSuccess: () => Promise.all(["label-tasks", "overview"].map((k) => qc.invalidateQueries({ queryKey: [k] }))),
+  });
+}
+
+export const useBearings = () => useQuery({ queryKey: ["bearings"], queryFn: api.bearings, staleTime: Infinity });
+export const useTestCapture = () => useMutation({ mutationFn: (d: CommissionDraft) => api.testCapture(d) });
+export const useKurtogram = () => useMutation({ mutationFn: (d: CommissionDraft) => api.kurtogram(d) });
+export function useStartBaseline() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (d: CommissionDraft) => api.startBaseline(d),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["audit"] }),
   });
 }

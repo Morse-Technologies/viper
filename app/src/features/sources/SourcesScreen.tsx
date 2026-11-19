@@ -1,8 +1,10 @@
 "use client";
 import {
-  Camera, FolderInput, Globe, Plus, Radio, RadioTower, Server,
+  Activity, Camera, FolderInput, Globe, Plus, Radio, RadioTower, Server,
 } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
+import { CommissionSheet } from "@/features/commissioning/CommissionSheet";
 import { toast } from "sonner";
 import { useEdgeDevices, useMachines, useSources } from "@/features/hooks";
 import type { EdgeDevice, Source, SourceKind } from "@/lib/api/types";
@@ -27,13 +29,23 @@ export function SourcesScreen() {
   const sources = useSources();
   const edges = useEdgeDevices();
   const [adding, setAdding] = useState(false);
+  const params = useSearchParams();
+  const router = useRouter();
+  // `?commission` opens the wizard (from a link or the palette); `?commission=<machine id>` starts on that machine.
+  const commission = params.get("commission");
+  const setCommission = (o: boolean) => router.replace(o ? "/sources?commission=1" : "/sources", { scroll: false });
 
   return (
     <Canvas>
       <PageHeader
         title="Sources"
         subline={sourcesSubline(sources.data, edges.data)}
-        actions={<Button variant="primary" onClick={() => setAdding(true)}><Plus />Add source</Button>}
+        actions={(
+          <>
+            <Button variant="outline" onClick={() => setCommission(true)}><Activity />Commission a point</Button>
+            <Button variant="primary" onClick={() => setAdding(true)}><Plus />Add source</Button>
+          </>
+        )}
       />
       <div className="mt-6 flex flex-col gap-6">
       {sources.isPending ? <LoadingRows rows={5} pitch="h-12" />
@@ -46,6 +58,7 @@ export function SourcesScreen() {
       </Card>
       </div>
       <AddSourceSheet open={adding} onOpenChange={setAdding} />
+      <CommissionSheet open={commission !== null} onOpenChange={setCommission} machineId={commission && commission !== "1" ? commission : undefined} />
     </Canvas>
   );
 }

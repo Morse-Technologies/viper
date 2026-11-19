@@ -132,6 +132,28 @@ export type AuditEvent = {
 export type AuditChain = { ok: boolean; checked: number; anchorAt: Iso; anchorHash: string; pending: number; brokenAt: number | null };
 export type AuditExport = { fileName: string; entries: number; signature: string; signedBy: string; body: string };
 
+export type Mounting = "stud" | "adhesive" | "magnet" | "probe";
+export type SensorAxis = "axial" | "radial-h" | "radial-v";
+export type PointComponent = "bearing" | "gear" | "impeller";
+export type SpeedSource = "fixed" | "tacho" | "vfd";
+export type Bearing = { model: string; kind: string; bpfo: number; bpfi: number; bsf: number; ftf: number };
+/** What the commissioning wizard (§22.8) collects for one measurement point. */
+export type CommissionDraft = {
+  machineId: Id; edgeId: Id; driverId: Id; input: string;
+  position: string; axis: SensorAxis; photo: string | null;
+  mounting: Mounting;
+  component: PointComponent; bearing: string; teeth: number | null;
+  speed: SpeedSource; rpm: number | null;
+  band: { from: number; to: number } | null;
+  baselineDays: 7 | 14 | 30;
+};
+export type CaptureCheck = { key: string; label: string; value: string; ok: boolean };
+/** A one-second test capture: the spectrum at 1 Hz lines up to the mounting's usable band, and the signal checks. */
+export type TestCapture = { at: Iso; spectrum: Spectrum; checks: CaptureCheck[] };
+/** Spectral kurtosis by level: row k splits the band into 2^k equal parts. `best` is the suggested envelope band. */
+export type Kurtogram = { maxHz: number; levels: number[][]; best: { level: number; index: number; from: number; to: number; kurtosis: number } };
+export type Baseline = { pointId: Id; machineId: Id; startedAt: Iso; endsAt: Iso };
+
 export type PlantSummary = Plant & { machines: number; inAlarm: number; open: Record<Severity, number> };
 
 export type ViperApi = {
@@ -162,6 +184,10 @@ export type ViperApi = {
   thresholds(plantId: Id): Promise<Threshold[]>;
   users(): Promise<User[]>;
   license(): Promise<License>;
+  bearings(): Promise<Bearing[]>;
+  testCapture(draft: CommissionDraft): Promise<TestCapture>;
+  kurtogram(draft: CommissionDraft): Promise<Kurtogram>;
+  startBaseline(draft: CommissionDraft): Promise<Baseline>;
   audit(plantId: Id): Promise<AuditEvent[]>;
   verifyAudit(plantId: Id): Promise<AuditChain>;
   exportAudit(plantId: Id, ids: Id[]): Promise<AuditExport>;
