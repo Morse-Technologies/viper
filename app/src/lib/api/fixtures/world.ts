@@ -64,7 +64,8 @@ const WATCH_DRIFT = 4;
 function trend(index: number | null, health: Health): number[] {
   if (index === null) return [];
   const slope = health === "healthy" ? 0.4 : health === "watch" ? WATCH_DRIFT : WATCH_DRIFT * 2;
-  return Array.from({ length: TREND_DAYS }, (_, i) => Math.min(100, Math.round(index + slope * (TREND_DAYS - 1 - i))));
+  const wobble = [0, 2, -1, 1, -2, 1, 0]; // day-to-day noise so the line reads as measured, not drawn
+  return Array.from({ length: TREND_DAYS }, (_, i) => Math.min(100, Math.round(index + slope * (TREND_DAYS - 1 - i) + wobble[i])));
 }
 
 const operating = (h: Health): Operating => (h === "stopped" ? "stopped" : h === "nodata" ? "unknown" : "running");

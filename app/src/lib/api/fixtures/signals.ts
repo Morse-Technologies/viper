@@ -62,7 +62,8 @@ export const CHANNELS: Channel[] = MACHINES.flatMap((m) => [
 ]);
 
 const BINS = 400;
-const MAX_HZ = 1000;
+/** Shaft orders and bearing frequencies of these machines sit below 250 Hz; the envelope band is shown, not the raw 0–10 kHz. */
+const MAX_HZ = 250;
 /** Bearing defect frequencies as multiples of shaft speed for a 6309-like bearing. */
 const BEARING = { BPFO: 3.58, BPFI: 5.42, BSF: 2.36, FTF: 0.4 };
 
@@ -75,7 +76,7 @@ export function spectrumFor(channelId: string): Spectrum {
   const faulty = m.health === "watch" || m.health === "alarm";
   const peaks: [number, number][] = [[f1, 1], [2 * f1, 0.45], [3 * f1, 0.2], ...(faulty ? [[BEARING.BPFO * f1, 0.75], [2 * BEARING.BPFO * f1, 0.3]] as [number, number][] : [])];
   const hz = Array.from({ length: BINS }, (_, i) => (i * MAX_HZ) / BINS);
-  const amp = hz.map((f) => 0.02 + rnd() * 0.02 + peaks.reduce((s, [pf, a]) => s + a * Math.exp(-(((f - pf) / 2.5) ** 2)), 0));
+  const amp = hz.map((f) => 0.02 + rnd() * 0.02 + peaks.reduce((s, [pf, a]) => s + a * Math.exp(-(((f - pf) / 0.8) ** 2)), 0));
   const markers = [
     { label: "1×", hz: f1, attributed: false }, { label: "2×", hz: 2 * f1, attributed: false }, { label: "3×", hz: 3 * f1, attributed: false },
     ...Object.entries(BEARING).map(([label, k]) => ({ label, hz: +(k * f1).toFixed(1), attributed: faulty && label === "BPFO" })),
