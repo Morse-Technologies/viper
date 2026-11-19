@@ -8,3 +8,4 @@ export { Band, CiteMark, BandSwatch, bandBg, bandLabel } from "./Band";
 export { Halftone } from "./Halftone";
 export { HoldButton } from "./HoldButton";
 export { CountUp } from "./CountUp";
+export { Sparkline } from "./Sparkline";

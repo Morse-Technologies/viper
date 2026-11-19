@@ -9,3 +9,4 @@ export {
   modalityIcon, ModalityIcons, HealthPill, healthToneOf, SeverityGlyph, AlertStatusPill, EvidenceChip, Steps,
 } from "./Domain";
 export { Tabs } from "./Tabs";
+export { ModalityBar } from "./ModalityBar";

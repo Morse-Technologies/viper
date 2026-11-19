@@ -7,6 +7,8 @@
   --color-ground: var(--ground);
   --color-surface: var(--surface);
   --color-raised: var(--raised);
+  --color-bar: var(--bar);
+  --color-bar-miss: var(--bar-miss);
   --color-active: var(--active);
   --color-border: var(--border);
   --color-rule: var(--rule);
