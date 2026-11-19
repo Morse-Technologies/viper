@@ -19,7 +19,8 @@ const subscribe = (cb: () => void) => {
   return () => { window.removeEventListener(EVENT, cb); mq.removeEventListener("change", cb); };
 };
 
-function apply(next: Theme) {
+/** Pins a theme without the reveal (Settings → Appearance). */
+export function pinTheme(next: Theme) {
   document.documentElement.dataset.theme = next;
   try { localStorage.setItem(KEY, next); } catch {}
   window.dispatchEvent(new Event(EVENT));
@@ -30,11 +31,11 @@ export function useTheme() {
   const theme = useSyncExternalStore(subscribe, readTheme, () => "light" as Theme);
   const toggle = useCallback((e?: { clientX: number; clientY: number }) => {
     const next: Theme = readTheme() === "dark" ? "light" : "dark";
-    if (!document.startViewTransition || reduced()) return apply(next);
+    if (!document.startViewTransition || reduced()) return pinTheme(next);
     const x = e?.clientX ?? innerWidth / 2;
     const y = e?.clientY ?? innerHeight / 2;
     const r = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
-    const vt = document.startViewTransition(() => flushSync(() => apply(next)));
+    const vt = document.startViewTransition(() => flushSync(() => pinTheme(next)));
     vt.ready.then(() => {
       document.documentElement.animate(
         { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${r}px at ${x}px ${y}px)`] },
