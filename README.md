@@ -20,7 +20,7 @@ pnpm dev            # http://localhost:3000 (any email, any password, any 6-digi
 | `pnpm lint` | ESLint (Next core web vitals + TypeScript) |
 | `pnpm typecheck` | Route types, then `tsc --noEmit` (strict) |
 | `pnpm test` | Vitest: mock layer and UI logic |
-| `pnpm e2e` | Playwright smoke tests (starts the dev server itself) |
+| `pnpm e2e` | Playwright smoke tests (starts its own dev server on port 3210; stop `pnpm dev` first, Next allows one dev server per folder) |
 | `node scripts/screenshots.mjs http://localhost:3000` | Light and dark screenshots into `app/screenshots/` (gitignored) |
 
 ## Stack
