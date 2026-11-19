@@ -2,7 +2,6 @@
 import { gsap } from "gsap";
 import { Check } from "lucide-react";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { toast } from "sonner";
 import { useKurtogram, useMachines, useStartBaseline, useTestCapture } from "@/features/hooks";
 import type { Baseline, CommissionDraft } from "@/lib/api/types";
 import { fmtDate } from "@/lib/format";
@@ -86,8 +85,7 @@ export function CommissionSheet({ open, onOpenChange, machineId }: { open: boole
   const finish = () => start.mutate(draft, {
     onSuccess: (b) => {
       setReached(STEPS.length);
-      setDone(b);
-      toast.success(`Baseline started on ${machine?.code ?? "the machine"}`, { description: `Until ${fmtDate(b.endsAt)}. Recorded in the audit log.` });
+      setDone(b); // the done panel says it; a toast would only cover the Close button
     },
   });
 
