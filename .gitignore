@@ -1,0 +1,5 @@
+# Private design spec and its backups stay out of the repository (like Wormy's spec).
+/VIPER.md
+*.bak
+*.bak-*
+.DS_Store
