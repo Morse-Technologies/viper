@@ -6,7 +6,7 @@ import { chromium } from "@playwright/test";
 const base = process.argv[2] ?? "http://localhost:3000";
 const ROUTES = process.argv.slice(3).length ? process.argv.slice(3) : [
   "/login", "/setup", "/dashboard", "/machines", "/machines/north-ext-01", "/alerts", "/signals", "/acoustics",
-  "/vision", "/models", "/labelling", "/group", "/settings",
+  "/vision", "/models", "/labelling", "/sources", "/sources?commission=north-ext-01", "/audit", "/group", "/settings",
 ];
 const SETTLE_MS = 1500;
 
@@ -17,7 +17,7 @@ for (const theme of ["light", "dark"]) {
   for (const route of ROUTES) {
     await page.goto(base + route, { waitUntil: "networkidle" });
     await page.waitForTimeout(SETTLE_MS);
-    const name = route.replace(/^\//, "").replaceAll("/", "_") || "home";
+    const name = route.replace(/^\//, "").replace(/[/?=]/g, "_") || "home";
     await page.screenshot({ path: `screenshots/${name}-${theme}.png` });
   }
   await page.close();

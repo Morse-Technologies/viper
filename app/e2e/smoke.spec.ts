@@ -54,3 +54,46 @@ test("a dragged widget keeps its new place after a reload", async ({ page }) => 
   await page.reload();
   await expect.poll(titles).toEqual(after);
 });
+
+test("the commissioning wizard reaches a baseline that the audit log records", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/sources");
+  await page.getByRole("button", { name: "Commission a point" }).click();
+  const dlg = page.getByRole("dialog");
+  const next = dlg.getByRole("button", { name: "Next", exact: true });
+  await dlg.getByLabel("Machine").selectOption("north-ext-01");
+  await dlg.getByLabel("Edge device").selectOption("edge-1");
+  await dlg.getByLabel("Driver").selectOption("drv-1");
+  for (let i = 0; i < 5; i++) await next.click();
+  await expect(next).toBeDisabled();
+  await dlg.getByRole("button", { name: "Capture 1 s" }).click();
+  await expect(dlg.getByText("Shaft peak where the speed says")).toBeVisible();
+  await next.click();
+  await expect(dlg.getByRole("group", { name: /Kurtogram/ })).toBeVisible();
+  await next.click();
+  await dlg.getByRole("button", { name: "Start baseline", exact: true }).click();
+  await expect(dlg.getByText("The baseline is running")).toBeVisible();
+  await dlg.getByRole("button", { name: "Close", exact: true }).last().click();
+  await page.getByRole("link", { name: "Audit" }).click();
+  await expect(page.getByRole("cell", { name: "Started baseline" }).first()).toBeVisible();
+  await expect(page.getByText("EXT-01 · Motor DE axial")).toBeVisible();
+});
+
+test("the spectrum zooms by preset, by drag, and resets", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/acoustics");
+  const range = page.locator("main").getByText(/^0 Hz – /).first();
+  await expect(range).toHaveText("0 Hz – 500 Hz");
+  await page.getByRole("radio", { name: "Full" }).click();
+  await expect(range).toHaveText("0 Hz – 5 kHz");
+  await page.getByRole("radio", { name: "200 Hz" }).click();
+  await expect(range).toHaveText("0 Hz – 200 Hz");
+  const over = (await page.getByRole("img", { name: "Amplitude spectrum" }).locator(".u-over").boundingBox())!;
+  await page.mouse.move(over.x + over.width * 0.4, over.y + over.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(over.x + over.width * 0.6, over.y + over.height / 2, { steps: 6 });
+  await page.mouse.up();
+  await expect(page.getByRole("radiogroup", { name: "Frequency range" }).getByRole("radio", { checked: true })).toHaveCount(0);
+  await page.getByRole("button", { name: "Reset" }).click();
+  await expect(page.locator("main").getByText("0 Hz – 500 Hz")).toBeVisible();
+});
