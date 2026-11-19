@@ -64,12 +64,12 @@ export function UsersPanel() {
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="w-44 px-4 py-3">
                         <Select
                           aria-label={`Role for ${u.name}`}
                           value={roleOf(u)}
                           onChange={(e) => changeRole(u, e.target.value as Role)}
-                          className="h-8 max-w-[160px]"
+                          className="h-8"
                         >
                           {ROLES.map((r) => <option key={r} value={r}>{roleInfo[r].label}</option>)}
                         </Select>

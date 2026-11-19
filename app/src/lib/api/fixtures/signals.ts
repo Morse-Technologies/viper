@@ -80,7 +80,7 @@ export function spectrumFor(channelId: string): Spectrum {
   const markers = [
     { label: "1×", hz: f1, attributed: false }, { label: "2×", hz: 2 * f1, attributed: false }, { label: "3×", hz: 3 * f1, attributed: false },
     ...Object.entries(BEARING).map(([label, k]) => ({ label, hz: +(k * f1).toFixed(1), attributed: faulty && label === "BPFO" })),
-  ].filter((mk) => mk.hz < MAX_HZ);
+  ].filter((mk) => mk.hz < MAX_HZ).sort((a, b) => a.hz - b.hz);
   return { channelId, hz, amp, markers, rpm };
 }
 

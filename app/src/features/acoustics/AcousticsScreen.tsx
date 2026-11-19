@@ -110,18 +110,20 @@ function Toolbar({
 }) {
   return (
     <>
-      <Select aria-label="Machine" value={machineId} onChange={(e) => onMachine(e.target.value)} className="w-[160px] bg-surface">
-        {acoustic.map((m) => <option key={m.id} value={m.id}>{m.code}</option>)}
-      </Select>
-      <Select
+      <span className="w-40">
+        <Select aria-label="Machine" value={machineId} onChange={(e) => onMachine(e.target.value)} className="bg-surface">
+          {acoustic.map((m) => <option key={m.id} value={m.id}>{m.code}</option>)}
+        </Select>
+      </span>
+      <span className="w-40"><Select
         aria-label="Channel"
         value={channelId ?? ""}
         onChange={(e) => onChannel(e.target.value)}
-        className="w-[160px] bg-surface"
+        className="bg-surface"
         disabled={channels.length === 0}
       >
         {channels.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-      </Select>
+      </Select></span>
       <Segmented label="Range" value={range} onChange={onRange} options={ACOUSTIC_RANGES} />
       {rpm !== null && (
         <span className="text-body text-muted">

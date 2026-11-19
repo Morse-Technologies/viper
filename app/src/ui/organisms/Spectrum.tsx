@@ -10,24 +10,26 @@ import { useTokens, type Tokens } from "@/lib/tokens";
 const AXIS_FONT = "12px var(--font-plex), system-ui, sans-serif";
 const MARK_FONT = "bold 11px var(--font-plex), system-ui, sans-serif";
 const LABEL_PAD = 4;
+const LABEL_ROW = 12; // neighbouring markers alternate between two label rows so they never overlap
 
 /** Marker lines in muted; the one the attribution points at in accent (the screen's single teal). */
 function markersHook(t: Tokens, data: SpectrumData) {
   return (u: uPlot) => {
     const ctx = u.ctx;
     const top = u.bbox.top;
-    for (const m of data.markers) {
+    data.markers.forEach((m, i) => {
       const x = u.valToPos(m.hz, "x", true);
+      const row = (i % 2) * LABEL_ROW * devicePixelRatio;
       ctx.save();
       ctx.strokeStyle = m.attributed ? t.accent : t.muted;
       ctx.fillStyle = m.attributed ? t.accent : t.muted;
       ctx.lineWidth = m.attributed ? 2 : 1;
       ctx.setLineDash(m.attributed ? [] : [3, 3]);
-      ctx.beginPath(); ctx.moveTo(x, top + 14 * devicePixelRatio); ctx.lineTo(x, top + u.bbox.height); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x, top + 14 * devicePixelRatio + row); ctx.lineTo(x, top + u.bbox.height); ctx.stroke();
       ctx.font = MARK_FONT.replace("11px", `${11 * devicePixelRatio}px`);
-      ctx.fillText(m.label, x + LABEL_PAD, top + 10 * devicePixelRatio);
+      ctx.fillText(m.label, x + LABEL_PAD, top + 10 * devicePixelRatio + row);
       ctx.restore();
-    }
+    });
   };
 }
 

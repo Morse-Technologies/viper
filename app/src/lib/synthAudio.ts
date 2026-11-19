@@ -4,7 +4,7 @@ import { hash, seeded } from "@/lib/api/random";
 const SAMPLE_RATE = 16_000;
 const HARMONICS = [1, 2, 3];
 const NOISE = 0.08;
-const TICK_EVERY = 0.0115; // seconds between bearing impacts (~87 Hz, BPFO of the mock extruder)
+const TICK_EVERY = 1 / 88.3; // seconds between bearing impacts (BPFO of the mock extruder at 1,480 rpm)
 const TICK_DECAY = 900;
 
 function samples({ seconds, rpm, faulty, seed }: { seconds: number; rpm: number; faulty: boolean; seed: string }) {

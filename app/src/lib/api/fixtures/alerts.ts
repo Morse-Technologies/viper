@@ -9,7 +9,7 @@ type Seed = {
 const SEEDS: Seed[] = [
   { code: "EXT-01", severity: "high", status: "open", minutes: 134, rule: "fusion", model: "bearing-envelope v4",
     title: "Possible outer race defect (drive-end bearing)",
-    summary: "Since 11:40 the axial envelope shows peaks at BPFO (87.3 Hz) and harmonics; motor current is 12% over its baseline. The 13:55 frame differs from the reference in the marked zone.",
+    summary: "Since 11:40 the axial envelope shows peaks at BPFO (88.3 Hz) and harmonics; motor current is 12% over its baseline. The 13:55 frame differs from the reference in the marked zone.",
     mix: [["vibration", 62], ["series", 23], ["camera", 15]] },
   { code: "PRS-04", severity: "high", status: "open", minutes: 52, rule: "threshold", model: null,
     title: "Hydraulic pressure above alarm limit",
