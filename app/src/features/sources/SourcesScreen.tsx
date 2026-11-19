@@ -5,11 +5,12 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 import { useEdgeDevices, useMachines, useSources } from "@/features/hooks";
-import type { Source, SourceKind } from "@/lib/api/types";
+import type { EdgeDevice, Source, SourceKind } from "@/lib/api/types";
 import { fmtAgo, fmtNum } from "@/lib/format";
 import { linkLabel, sourceKindLabel, sourceStatusLabel } from "@/lib/labels";
 import { Button, Dot, Input, Select, type Tone } from "@/ui/atoms";
-import { Card, ErrorState, Field, LoadingRows, Sheet } from "@/ui/cells";
+import { Card, ErrorState, Field, LoadingRows, PageHeader, Sheet } from "@/ui/cells";
+import { Canvas } from "@/ui/templates/ShellLayout";
 import { fmtLag } from "./fmtLag";
 
 const KIND_ICON: Record<SourceKind, typeof FolderInput> = {
@@ -22,16 +23,19 @@ const STATUS_TONE: Record<Source["status"], Tone> = {
 
 const LINK_TONE = { online: "positive", degraded: "warning", offline: "negative" } as const satisfies Record<string, Tone>;
 
-export function SourcesPanel() {
+export function SourcesScreen() {
   const sources = useSources();
   const edges = useEdgeDevices();
   const [adding, setAdding] = useState(false);
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex justify-end">
-        <Button variant="primary" onClick={() => setAdding(true)}><Plus />Add source</Button>
-      </div>
+    <Canvas>
+      <PageHeader
+        title="Sources"
+        subline={sourcesSubline(sources.data, edges.data)}
+        actions={<Button variant="primary" onClick={() => setAdding(true)}><Plus />Add source</Button>}
+      />
+      <div className="mt-6 flex flex-col gap-6">
       {sources.isPending ? <LoadingRows rows={5} pitch="h-12" />
         : sources.isError ? <ErrorState what="sources" onRetry={() => sources.refetch()} />
           : <SourcesTable rows={sources.data ?? []} />}
@@ -40,9 +44,19 @@ export function SourcesPanel() {
           : edges.isError ? <ErrorState what="edge devices" onRetry={() => edges.refetch()} />
             : <EdgeGrid />}
       </Card>
+      </div>
       <AddSourceSheet open={adding} onOpenChange={setAdding} />
-    </div>
+    </Canvas>
   );
+}
+
+/** One sentence carrying the finding: what is silent, what is offline. */
+function sourcesSubline(sources?: Source[], edges?: EdgeDevice[]): string {
+  if (!sources || !edges) return "Data sources and edge devices for this plant.";
+  const quiet = sources.filter((s) => s.status === "quiet").length;
+  const live = edges.filter((d) => d.status === "online").length;
+  const head = quiet ? `${quiet} of ${sources.length} sources quiet` : `All ${sources.length} sources receiving`;
+  return `${head}; ${live} of ${edges.length} edge devices online.`;
 }
 
 function SourcesTable({ rows }: { rows: Source[] }) {
