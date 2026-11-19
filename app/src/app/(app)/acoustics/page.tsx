@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
+import { ClientOnly } from "@/ui/templates/ClientOnly";
 import { AcousticsScreen } from "@/features/acoustics/AcousticsScreen";
 
 export const metadata: Metadata = { title: "Vibration & sound" };
 
 export default function Page() {
-  return <Suspense><AcousticsScreen /></Suspense>;
+  return <ClientOnly><AcousticsScreen /></ClientOnly>;
 }

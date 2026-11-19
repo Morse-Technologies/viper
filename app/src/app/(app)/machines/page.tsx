@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
+import { ClientOnly } from "@/ui/templates/ClientOnly";
 import { MachinesScreen } from "@/features/machines/MachinesScreen";
 
 export const metadata: Metadata = { title: "Machines" };
 
 export default function Page() {
-  return <Suspense><MachinesScreen /></Suspense>;
+  return <ClientOnly><MachinesScreen /></ClientOnly>;
 }
