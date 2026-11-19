@@ -1,5 +1,5 @@
 import type {
-  AlertStatus, DriverKind, Feedback, Health, LabelReason, LinkState, Modality, ModelStatus, Operating, Role, Severity, SourceKind,
+  AlertStatus, AuditAction, AuditObjectKind, DriverKind, Feedback, Health, LabelReason, LinkState, Modality, ModelStatus, Operating, Role, Severity, SourceKind,
 } from "@/lib/api/types";
 
 /** Words people read. No screen shows an internal key where a text exists here. No JSX. */
@@ -46,4 +46,15 @@ export const roleInfo: Record<Role, { label: string; help: string }> = {
   operator: { label: "Operator", help: "Acknowledges alerts, gives feedback and labels evidence." },
   maintainer: { label: "Maintainer", help: "Changes thresholds, channels and sources; promotes and reverts models." },
   admin: { label: "Administrator", help: "Manages people, retention, federation and the licence." },
+};
+
+export const auditActionLabel: Record<AuditAction, string> = {
+  "auth.login": "Signed in", "auth.totp_reset": "TOTP reset", "alert.acknowledge": "Acknowledged alert", "alert.resolve": "Resolved alert",
+  "alert.feedback": "Gave alert feedback", "model.promote": "Promoted model", "model.rollback": "Rolled back model",
+  "threshold.change": "Changed threshold", "source.add": "Added source", "source.quarantine": "Quarantined rows",
+  "user.invite": "Invited user", "user.role": "Changed role", "media.live": "Watched live view", "roi.approve": "Approved reference",
+  "baseline.start": "Started baseline", "audit.export": "Exported audit",
+};
+export const auditObjectLabel: Record<AuditObjectKind, string> = {
+  session: "Session", alert: "Alert", model: "Model", threshold: "Threshold", source: "Source", user: "User", camera: "Camera", machine: "Measurement point", audit: "Audit log",
 };

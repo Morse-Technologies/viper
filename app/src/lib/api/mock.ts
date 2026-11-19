@@ -1,4 +1,6 @@
+import { MOCK_NOW } from "@/lib/clock";
 import { ALERTS } from "./fixtures/alerts";
+import { AUDIT, digest, verifyChain } from "./fixtures/audit";
 import { CAMERAS, DRIVERS, EDGE_DEVICES, LABEL_TASKS, LICENSE, MODELS, SOURCES, TAXONOMY } from "./fixtures/catalog";
 import { CHANNELS, SIGNALS, seriesFor, snippetsFor, spectrogramFor, spectrumFor } from "./fixtures/signals";
 import { GROUP_NAME, MACHINES, PLANTS, USERS } from "./fixtures/world";
@@ -11,6 +13,9 @@ const later = <T>(value: T) => new Promise<T>((resolve) => setTimeout(() => reso
 const DEFAULT_PLANT = PLANTS[0].id;
 const QUIET_LAG_SECONDS = 3600;
 const DEVIATING_LINES = 4;
+/** Verifying walks the whole chain; the mock takes long enough for the progress to read as work. */
+const VERIFY_MS = 900;
+const MOCK_DAY = new Date(MOCK_NOW).toISOString().slice(0, 10);
 
 /** Writes change this in-memory copy only; a reload restores the snapshot. */
 const alerts: Alert[] = structuredClone(ALERTS);
@@ -101,6 +106,16 @@ export const mockApi: ViperApi = {
   thresholds: (plantId) => later(thresholds(plantId)),
   users: () => later(USERS),
   license: () => later(LICENSE),
+  audit: (plantId) => later(inPlant(AUDIT, plantId).slice().reverse()),
+  verifyAudit: (plantId) => new Promise((resolve) => setTimeout(() => resolve(verifyChain(inPlant(AUDIT, plantId))), VERIFY_MS)),
+  exportAudit: (plantId, ids) => {
+    const rows = inPlant(AUDIT, plantId).filter((e) => ids.includes(e.id));
+    const body = JSON.stringify(rows, null, 2);
+    return later({
+      fileName: `viper-audit-${plantId}-${MOCK_DAY}.json`, entries: rows.length, body,
+      signature: `ed25519:${digest(body)}${digest(body + "sig")}`, signedBy: "North Plant server key (mock)",
+    });
+  },
   login: () => later({ needsTotp: true as const }),
   verifyTotp: () => later(ME),
 };

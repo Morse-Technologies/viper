@@ -93,6 +93,16 @@ export const useLabelTasks = () => usePlantQuery("label-tasks", api.labelTasks);
 export const useSources = () => usePlantQuery("sources", api.sources);
 export const useEdgeDevices = () => usePlantQuery("edge", api.edgeDevices);
 export const useThresholds = () => usePlantQuery("thresholds", api.thresholds);
+export const useAudit = () => usePlantQuery("audit", api.audit);
+
+export function useVerifyAudit() {
+  const { plantId } = usePlantId();
+  return useMutation({ mutationFn: () => api.verifyAudit(plantId) });
+}
+export function useExportAudit() {
+  const { plantId } = usePlantId();
+  return useMutation({ mutationFn: (ids: Id[]) => api.exportAudit(plantId, ids) });
+}
 
 export const useAllModels = () => useQuery({ queryKey: ["models", "all"], queryFn: () => api.models() });
 export const useTaxonomy = () => useQuery({ queryKey: ["taxonomy"], queryFn: api.taxonomy });

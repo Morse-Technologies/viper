@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 const SCREENS: [string, RegExp][] = [
   ["/dashboard", /Dashboard/], ["/machines", /Machines|EXT|PRS/], ["/machines/north-ext-01", /EXT-01/], ["/alerts", /Alerts|outer race/i],
   ["/signals", /Signals/], ["/acoustics", /Spectrum/i], ["/vision", /Vision/], ["/labelling", /Label/i],
-  ["/models", /Models/], ["/sources", /Sources/], ["/group", /Group/], ["/settings", /Configuration/],
+  ["/models", /Models/], ["/sources", /Sources/], ["/audit", /Chain verified/], ["/group", /Group/], ["/settings", /Configuration/],
 ];
 
 for (const [path, heading] of SCREENS) {

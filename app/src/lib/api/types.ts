@@ -118,6 +118,19 @@ export type Overview = {
   labelling: { tasks: number; byUncertainty: number }; shadowModels: number; ingestLagSeconds: number;
 };
 
+export type AuditObjectKind = "session" | "alert" | "model" | "threshold" | "source" | "user" | "camera" | "machine" | "audit";
+export type AuditAction =
+  | "auth.login" | "auth.totp_reset" | "alert.acknowledge" | "alert.resolve" | "alert.feedback"
+  | "model.promote" | "model.rollback" | "threshold.change" | "source.add" | "source.quarantine"
+  | "user.invite" | "user.role" | "media.live" | "roi.approve" | "baseline.start" | "audit.export";
+/** One append-only audit entry. `hash` chains over `prevHash` and the entry body; anchors seal the chain daily. */
+export type AuditEvent = {
+  id: Id; seq: number; plantId: Id; at: Iso; actorId: Id | null; actor: string; action: AuditAction;
+  objectKind: AuditObjectKind; object: string; detail: string; ip: string; prevHash: string; hash: string; anchored: boolean;
+};
+export type AuditChain = { ok: boolean; checked: number; anchorAt: Iso; anchorHash: string; pending: number; brokenAt: number | null };
+export type AuditExport = { fileName: string; entries: number; signature: string; signedBy: string; body: string };
+
 export type PlantSummary = Plant & { machines: number; inAlarm: number; open: Record<Severity, number> };
 
 export type ViperApi = {
@@ -148,6 +161,9 @@ export type ViperApi = {
   thresholds(plantId: Id): Promise<Threshold[]>;
   users(): Promise<User[]>;
   license(): Promise<License>;
+  audit(plantId: Id): Promise<AuditEvent[]>;
+  verifyAudit(plantId: Id): Promise<AuditChain>;
+  exportAudit(plantId: Id, ids: Id[]): Promise<AuditExport>;
   login(email: string, password: string): Promise<{ needsTotp: true }>;
   verifyTotp(code: string): Promise<Me>;
 };
