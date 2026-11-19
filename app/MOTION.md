@@ -27,18 +27,18 @@ leave out are listed at the end with the reason.
 | Principle | Pattern in Viper | Where |
 |---|---|---|
 | Easing and timing | Exponential ease-out for enters, balanced curve for moves, drawer curve for sheets; three durations only | `globals.css` `@theme`, all GSAP calls use `power3.*` |
-| Offset and delay (sequential, staggered) | Screen parts rise 14px in order, 60ms apart; list rows and camera cards 50ms apart | `useEnter` in `Canvas`; `stagger` utility with `--i` |
+| Offset and delay (sequential, staggered) | Screen parts rise 14px in order, 60ms apart; list rows and camera cards 50ms apart; audit rows settle 12ms apart when a filter changes; kurtogram levels fill top-down 60ms apart | `useEnter` in `Canvas`; `stagger` utility with `--i`; `AuditTable`, `Kurtogram` |
 | Smooth content reveal | Each screen fades and rises in once on mount; route changes fade the old screen (120ms) and rise the new one 6px (220ms) | `Canvas`, View Transitions in `AppShell` |
 | Parenting | The 2px tab underline and the segmented pill belong to their row and glide with it to the active item | `Tabs`, `Segmented` (`useGlide`) |
 | Transformation (morphing) | Dashboard widgets glide and resize from where they were to where they land when moved, resized, added or removed | `features/dashboard/layout.ts` (GSAP Flip) |
 | Value change | KPIs count up to their value; the rail badge pops when a number goes up | `CountUp`, `usePopOnIncrease` |
 | Masking | Charts reveal through a clip-path wipe (series left→right, spectrum bottom→top, spectrogram top→bottom); the theme switch reveals the new theme as a circle from the click | `SignalChart`, `Spectrum`, `Spectrogram`, `features/shell/theme.ts` |
-| Directional motion | Bands and alert rows enter from their arrow side (14px); sheets slide from their edge | `animate-band-in`, `Sheet` |
+| Directional motion | Bands and alert rows enter from their arrow side (14px); sheets slide from their edge; wizard steps slide in 18px from the side they come from (forward from the right, back from the left) | `animate-band-in`, `Sheet`, `CommissionSheet` |
 | Overlay and obscuration | Sheets and modals dim the sheet behind with `--scrim`; the Alerts peek floats over the rail with `--shadow-float` (the only shadow) | `Overlay.tsx`, `AppRail` |
-| Dolly / scale and zoom | A widget added to the dashboard scales from 0.96 to 1; a removed one shrinks and fades before the grid closes the gap | `layout.ts` (`onEnter`, `leaveThen`) |
-| Micro-interaction / responsive feedback | Controls press to 0.98 in 120ms; every write ends in a toast, reversible ones with Undo | `Button`, `HoldButton`, `sonner` |
+| Dolly / scale and zoom | A widget added to the dashboard scales from 0.96 to 1; a removed one shrinks and fades before the grid closes the gap; the spectrum's frequency window glides to a preset or to a dragged selection (0.5s, `power3.inOut`) so the eye keeps the peak it was on | `layout.ts` (`onEnter`, `leaveThen`), `Spectrum` |
+| Micro-interaction / responsive feedback | Controls press to 0.98 in 120ms; every write ends in a toast, reversible ones with Undo, or in a done panel when a sheet already shows the result; a passed wizard step pops its teal tick once (`back.out`) | `Button`, `HoldButton`, `sonner`, `Stepper` |
 | Anticipation | Destructive or binding actions fill a bar while held; letting go early retracts it | `HoldButton` |
-| Progress indicators | Skeletons in `--active`, the "Updating" spinner in the top bar, numbered steps in setup | `States`, `AppShell`, `Steps` |
+| Progress indicators | Skeletons in `--active`, the "Updating" spinner in the top bar, numbered steps in setup; the wizard's ink line fills down to the current step; the audit chain check and the 1 s test capture run a 2px ink line while they work | `States`, `AppShell`, `Steps`, `Stepper`, `ChainStatus`, `CaptureStep` |
 | Hover effects and animated icons | Rail items tint on hover; icons inside controls nudge or turn a little on hover/focus; the primary button leans toward the pointer about 4px | `globals.css` icon motion, `useMagnetic` |
 | Data growth | Bars grow from their baseline, one after another | `useGrow` (dashboard lines, modality bar, licence usage) |
 | Consistency | One clock, one set of curves and durations, the same pattern for the same meaning on every screen | this file |
