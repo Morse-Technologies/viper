@@ -5,7 +5,7 @@ import type { Channel, Health } from "@/lib/api/types";
 import { EmptyState, Field, LoadingRows } from "@/ui/cells";
 import { Select } from "@/ui/atoms";
 import { AudioSnippet } from "@/ui/organisms/AudioSnippet";
-import { Spectrum } from "@/ui/organisms/Spectrum";
+import { SpectrumView } from "@/ui/organisms/SpectrumView";
 import { Spectrogram } from "@/ui/organisms/Spectrogram";
 import { CHART_HEIGHT } from "./tabs";
 
@@ -55,7 +55,7 @@ function ChannelPanels({
         <div>
           <p className="mb-2 text-body font-medium">Spectrum</p>
           {spectrum.data
-            ? <Spectrum data={spectrum.data} height={CHART_HEIGHT} />
+            ? <SpectrumView data={spectrum.data} height={CHART_HEIGHT} compact />
             : <LoadingRows rows={1} pitch="h-40" />}
         </div>
         <div>

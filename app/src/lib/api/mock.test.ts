@@ -46,6 +46,15 @@ describe("mock world", () => {
     expect(s.markers.find((m) => m.attributed)?.label).toBe("BPFO");
   });
 
+  it("covers 0 to 5 kHz in half-hertz lines and attributes gear mesh on the gearbox", async () => {
+    const [ch] = await mockApi.channels("north-grb-02");
+    const s = await mockApi.spectrum(ch.id);
+    expect(s.hz.at(-1)).toBe(5000);
+    expect(s.hz[1] - s.hz[0]).toBe(0.5);
+    expect(s.markers.find((m) => m.attributed)?.label).toBe("GMF");
+    expect(s.markers.filter((m) => m.attributed)).toHaveLength(1);
+  });
+
   it("keeps an acknowledged status after the write", async () => {
     const a = await mockApi.setAlertStatus("al-001", "acknowledged");
     expect(a.status).toBe("acknowledged");

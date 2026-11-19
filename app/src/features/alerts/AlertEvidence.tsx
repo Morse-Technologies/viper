@@ -5,7 +5,7 @@ import { EvidenceChip } from "@/ui/cells";
 import { AudioSnippet } from "@/ui/organisms/AudioSnippet";
 import { CameraFrame } from "@/ui/organisms/CameraFrame";
 import { SignalChart } from "@/ui/organisms/SignalChart";
-import { Spectrum } from "@/ui/organisms/Spectrum";
+import { SpectrumView } from "@/ui/organisms/SpectrumView";
 import { CHART_HEIGHT, VISION_MODALITIES, modalitiesOf } from "./filter";
 
 export function AlertEvidence({ alert, machine }: { alert: Alert; machine: Machine }) {
@@ -32,7 +32,7 @@ export function AlertEvidence({ alert, machine }: { alert: Alert; machine: Machi
       </ul>
       {mods.has("vibration") && spectrum.data && (
         <div className="overflow-hidden rounded-card bg-raised p-3">
-          <Spectrum data={spectrum.data} height={CHART_HEIGHT} />
+          <SpectrumView data={spectrum.data} height={CHART_HEIGHT} compact />
         </div>
       )}
       {mods.has("series") && series.data && first && (

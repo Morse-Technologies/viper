@@ -3,7 +3,7 @@ import { useSpectrum, useSpectrogram } from "@/features/hooks";
 import type { Id } from "@/lib/api/types";
 import { Skeleton } from "@/ui/atoms";
 import { Card, KeyValues } from "@/ui/cells";
-import { Spectrum } from "@/ui/organisms/Spectrum";
+import { SpectrumView } from "@/ui/organisms/SpectrumView";
 import { Spectrogram } from "@/ui/organisms/Spectrogram";
 export function SpectrumPanel({ channelId }: { channelId: Id | null }) {
   const spectrum = useSpectrum(channelId);
@@ -18,7 +18,7 @@ export function SpectrumPanel({ channelId }: { channelId: Id | null }) {
         <Card id="spectrum-h" title="Spectrum (last minute)">
           {!channelId ? <p className="pb-3 text-body text-muted">Pick a channel.</p>
             : spectrum.isPending || !spectrum.data ? <Skeleton className="mb-3 h-[220px] w-full rounded-control" />
-              : <div className="pb-3"><Spectrum data={spectrum.data} /></div>}
+              : <div className="pb-3"><SpectrumView data={spectrum.data} /></div>}
         </Card>
         <Card id="spectrogram-h" title="Spectrogram (7 d)">
           {!channelId ? <p className="pb-3 text-body text-muted">Pick a channel.</p>

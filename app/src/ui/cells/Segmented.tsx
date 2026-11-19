@@ -5,7 +5,7 @@ import { cn } from "@/lib/cn";
 
 type Option<T extends string> = { value: T; label: string; count?: number };
 
-/** A segmented radio group. The white pill slides between options on the move curve. */
+/** A segmented radio group. The white pill slides between options on the move curve; a value that matches no option shows none. */
 export function Segmented<T extends string>({
   options,
   value,
@@ -24,7 +24,8 @@ export function Segmented<T extends string>({
   const index = options.findIndex((o) => o.value === value);
   useGlide(pill, () => {
     const el = refs.current[index];
-    return el ? { x: el.offsetLeft, width: el.offsetWidth } : null;
+    // No option chosen (a custom value): the pill fades out where it is.
+    return el ? { x: el.offsetLeft, width: el.offsetWidth } : { opacity: 0 };
   }, [index, options]);
 
   const onKey = (e: KeyboardEvent) => {

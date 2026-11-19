@@ -49,7 +49,8 @@ export type Alert = {
 
 export type Channel = { id: Id; machineId: Id; name: string; kind: "vibration" | "audio"; sampleRateHz: number; driverId: Id };
 
-export type SpectrumMarker = { label: string; hz: number; attributed: boolean };
+/** `priority` 0 is always labelled; higher numbers give way first when labels crowd at a zoom level. */
+export type SpectrumMarker = { label: string; hz: number; attributed: boolean; priority: number };
 export type Spectrum = { channelId: Id; hz: number[]; amp: number[]; markers: SpectrumMarker[]; rpm: number };
 /** Rows are time slices (oldest first), columns frequency bins, values 0..1. */
 export type Spectrogram = { channelId: Id; rows: number[][]; maxHz: number; days: number };

@@ -249,3 +249,6 @@
 @media (prefers-reduced-motion: reduce) {
   :is(a, button, [role="menuitem"], [role="tab"]) svg.lucide { transition: none; transform: none !important; }
 }
+
+/* uPlot's drag-to-zoom selection, in ink so it reads in both themes. */
+.u-select { background: color-mix(in srgb, var(--text) 8%, transparent); }

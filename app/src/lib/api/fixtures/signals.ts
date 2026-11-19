@@ -61,11 +61,21 @@ export const CHANNELS: Channel[] = MACHINES.flatMap((m) => [
   ...(m.modalities.includes("audio") ? [{ id: `${m.id}.mic-01`, machineId: m.id, name: "MIC-01", kind: "audio" as const, sampleRateHz: 48_000, driverId: DRIVERS[3].id }] : []),
 ]);
 
-const BINS = 400;
-/** Shaft orders and bearing frequencies of these machines sit below 250 Hz; the envelope band is shown, not the raw 0–10 kHz. */
-const MAX_HZ = 250;
+/** 0.5 Hz lines up to 5 kHz: a 10,240-line FFT of the 25.6 kHz channel, cut at the band the mounting supports. */
+export const SPECTRUM_MAX_HZ = 5000;
+const RESOLUTION_HZ = 0.5;
+const BINS = SPECTRUM_MAX_HZ / RESOLUTION_HZ + 1;
+const PEAK_WIDTH_HZ = 0.8;
 /** Bearing defect frequencies as multiples of shaft speed for a 6309-like bearing. */
 const BEARING = { BPFO: 3.58, BPFI: 5.42, BSF: 2.36, FTF: 0.4 };
+/** Gear teeth on the input shaft (gearboxes and the extruder reducer) and impeller vanes (pumps). */
+const GEAR_TEETH = 27;
+const VANES = 6;
+const LINE_HZ = 50;
+const RESONANCE = { hz: 2850, width: 380 };
+
+/** Marker priority: 0 is always labelled, higher numbers give way first when labels crowd. */
+const P = { attributed: 0, shaft: 1, fault: 2, mesh: 2, harmonic: 3, family: 4 } as const;
 
 export function spectrumFor(channelId: string): Spectrum {
   const ch = CHANNELS.find((c) => c.id === channelId)!;
@@ -74,29 +84,58 @@ export function spectrumFor(channelId: string): Spectrum {
   const f1 = rpm / 60;
   const rnd = seeded(hash(channelId));
   const faulty = m.health === "watch" || m.health === "alarm";
-  const peaks: [number, number][] = [[f1, 1], [2 * f1, 0.45], [3 * f1, 0.2], ...(faulty ? [[BEARING.BPFO * f1, 0.75], [2 * BEARING.BPFO * f1, 0.3]] as [number, number][] : [])];
-  const hz = Array.from({ length: BINS }, (_, i) => (i * MAX_HZ) / BINS);
-  const amp = hz.map((f) => 0.02 + rnd() * 0.02 + peaks.reduce((s, [pf, a]) => s + a * Math.exp(-(((f - pf) / 0.8) ** 2)), 0));
+  const geared = m.kind === "Gearbox" || m.kind === "Extruder";
+  const gearFault = faulty && m.kind === "Gearbox";
+  const bearingFault = faulty && !gearFault;
+  const pumped = m.kind === "Centrifugal pump";
+  const bpfo = BEARING.BPFO * f1;
+  const gmf = GEAR_TEETH * f1;
+
+  const peaks: [number, number][] = [
+    ...Array.from({ length: 10 }, (_, k) => [(k + 1) * f1, 1 / (k + 1) ** 1.4] as [number, number]),
+    [2 * LINE_HZ, 0.12],
+    ...(pumped ? [[VANES * f1, 0.5], [2 * VANES * f1, 0.15]] as [number, number][] : []),
+    ...(geared ? [[gmf, gearFault ? 0.7 : 0.3], [2 * gmf, gearFault ? 0.3 : 0.1]] as [number, number][] : []),
+    ...(gearFault ? [-3, -2, -1, 1, 2, 3].map((k) => [gmf + k * f1, 0.32 / Math.abs(k)] as [number, number]) : []),
+    ...(bearingFault ? Array.from({ length: 6 }, (_, k) => [(k + 1) * bpfo, 0.75 / (k + 1) ** 0.8] as [number, number]) : []),
+    ...(bearingFault ? [1, 2].flatMap((h) => [-1, 1].map((s) => [h * bpfo + s * f1, 0.18 / h] as [number, number])) : []),
+  ];
+  const hz = Array.from({ length: BINS }, (_, i) => i * RESOLUTION_HZ);
+  const amp = hz.map((f) => {
+    const floor = 0.012 + rnd() * 0.012 + 0.02 / (1 + f / 40);
+    const hump = bearingFault || gearFault ? 0.09 * Math.exp(-(((f - RESONANCE.hz) / RESONANCE.width) ** 2)) * (0.5 + rnd()) : 0;
+    let tonal = 0;
+    for (const [pf, a] of peaks) { const d = (f - pf) / PEAK_WIDTH_HZ; if (d > -6 && d < 6) tonal += a * Math.exp(-(d * d)); }
+    return +(floor + hump + tonal).toFixed(4);
+  });
+
+  const mk = (label: string, at: number, priority: number, attributed = false) => ({ label, hz: +at.toFixed(1), attributed, priority: attributed ? P.attributed : priority });
   const markers = [
-    { label: "1×", hz: f1, attributed: false }, { label: "2×", hz: 2 * f1, attributed: false }, { label: "3×", hz: 3 * f1, attributed: false },
-    ...Object.entries(BEARING).map(([label, k]) => ({ label, hz: +(k * f1).toFixed(1), attributed: faulty && label === "BPFO" })),
-  ].filter((mk) => mk.hz < MAX_HZ).sort((a, b) => a.hz - b.hz);
+    mk("1×", f1, P.shaft), mk("2×", 2 * f1, P.harmonic), mk("3×", 3 * f1, P.harmonic),
+    ...Object.entries(BEARING).map(([label, k]) => mk(label, k * f1, P.fault, bearingFault && label === "BPFO")),
+    ...(bearingFault ? [2, 3, 4].map((h) => mk(`${h}×BPFO`, h * bpfo, P.family)) : []),
+    ...(pumped ? [mk("BPF", VANES * f1, P.mesh)] : []),
+    ...(geared ? [mk("GMF", gmf, P.mesh, gearFault), mk("2×GMF", 2 * gmf, P.family)] : []),
+  ].filter((x) => x.hz < SPECTRUM_MAX_HZ).sort((a, b) => a.hz - b.hz);
   return { channelId, hz, amp, markers, rpm };
 }
 
 const SPEC_ROWS = 84;
-const SPEC_COLS = 96;
+const SPEC_COLS = 160;
 
 export function spectrogramFor(channelId: string): Spectrogram {
   const s = spectrumFor(channelId);
   const rnd = seeded(hash(channelId + "sg"));
   const peak = Math.max(...s.amp);
   const rows = Array.from({ length: SPEC_ROWS }, (_, r) => Array.from({ length: SPEC_COLS }, (_, c) => {
-    const amp = s.amp[Math.floor((c / SPEC_COLS) * s.amp.length)] / peak;
+    const from = Math.floor((c / SPEC_COLS) * s.amp.length), to = Math.floor(((c + 1) / SPEC_COLS) * s.amp.length);
+    let amp = 0;
+    for (let i = from; i < to; i++) amp = Math.max(amp, s.amp[i]);
+    amp = Math.sqrt(amp / peak); // a root scale keeps the quiet high band visible beside the shaft peaks
     const growth = 0.55 + 0.45 * (r / SPEC_ROWS);
     return Math.min(1, amp * growth + rnd() * 0.08);
   }));
-  return { channelId, rows, maxHz: MAX_HZ, days: 7 };
+  return { channelId, rows, maxHz: SPECTRUM_MAX_HZ, days: 7 };
 }
 
 export const snippetsFor = (channelId: string): Snippet[] => [

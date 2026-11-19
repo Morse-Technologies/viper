@@ -2,6 +2,7 @@
 import { gsap } from "gsap";
 import { useEffect, useRef } from "react";
 import type { Spectrogram as SpectrogramData } from "@/lib/api/types";
+import { fmtHz } from "@/lib/format";
 import { reduced } from "@/lib/motion";
 import { useTokens } from "@/lib/tokens";
 
@@ -44,11 +45,11 @@ export function Spectrogram({ data, height = 220 }: { data: SpectrogramData; hei
   }, [t, data]);
   return (
     <figure className="flex flex-col gap-2">
-      <canvas ref={canvas} role="img" aria-label={`Spectrogram, last ${data.days} days, 0 to ${data.maxHz} Hz`} className="w-full rounded-control bg-raised [image-rendering:pixelated]" style={{ height }} />
+      <canvas ref={canvas} role="img" aria-label={`Spectrogram, last ${data.days} days, 0 to ${fmtHz(data.maxHz)}`} className="w-full rounded-control bg-raised [image-rendering:pixelated]" style={{ height }} />
       <figcaption className="flex items-center justify-between text-small text-muted num">
         <span>0 Hz</span>
         <span className="h-2.5 w-32 rounded-full" style={{ background: `linear-gradient(90deg, ${t.surface}, ${t["accent-soft"]}, ${t.accent}, ${t.text})` }} aria-hidden />
-        <span>{data.maxHz} Hz</span>
+        <span>{fmtHz(data.maxHz)}</span>
       </figcaption>
     </figure>
   );

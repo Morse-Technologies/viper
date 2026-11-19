@@ -8,7 +8,7 @@ import { EvidenceChip } from "@/ui/cells";
 import { AudioSnippet } from "@/ui/organisms/AudioSnippet";
 import { CameraFrame } from "@/ui/organisms/CameraFrame";
 import { SignalChart } from "@/ui/organisms/SignalChart";
-import { Spectrum } from "@/ui/organisms/Spectrum";
+import { SpectrumView } from "@/ui/organisms/SpectrumView";
 import { SERIES_RANGE } from "./constants";
 
 function isVibOrAudio(m: Modality): m is "vibration" | "audio" {
@@ -30,7 +30,7 @@ function VibAudioView({ machineId, modality }: { machineId: string; modality: "v
   if (channels.isPending) return <Skeleton className="h-40 w-full" />;
   if (modality === "vibration") {
     if (!spectrum.data) return <p className="text-body text-muted">No spectrum for this channel.</p>;
-    return <Spectrum data={spectrum.data} />;
+    return <SpectrumView data={spectrum.data} compact />;
   }
   const snippet = snippets.data?.[0];
   if (!snippet) return <p className="text-body text-muted">No audio snippet for this channel.</p>;

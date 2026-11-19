@@ -41,14 +41,14 @@ export function useEnter(ref: RefObject<HTMLElement | null>) {
  * A highlight that glides to the active item. `measure` returns the target box relative to the pill's
  * container; the first placement is instant, later ones ease.
  */
-export function useGlide(pill: RefObject<HTMLElement | null>, measure: () => { x?: number; y?: number; width?: number; height?: number } | null, deps: unknown[]) {
+export function useGlide(pill: RefObject<HTMLElement | null>, measure: () => { x?: number; y?: number; width?: number; height?: number; opacity?: number } | null, deps: unknown[]) {
   const placed = useRef(false);
   useLayoutEffect(() => {
     const el = pill.current;
     const box = measure();
     if (!el || !box) return;
-    if (!placed.current || reduced()) { gsap.set(el, { ...box, opacity: 1 }); placed.current = true; return; }
-    gsap.to(el, { ...box, opacity: 1, duration: 0.45, ease: "power3.out", overwrite: "auto" });
+    if (!placed.current || reduced()) { gsap.set(el, { opacity: 1, ...box }); placed.current = true; return; }
+    gsap.to(el, { opacity: 1, ...box, duration: 0.45, ease: "power3.out", overwrite: "auto" });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);
 }

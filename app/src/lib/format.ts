@@ -39,3 +39,9 @@ export const daysUntil = (isoDate: string) =>
 export const isEmail = (s: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
 
 export const plural = (n: number, one: string, many = `${one}s`) => `${fmtNum(n)} ${n === 1 ? one : many}`;
+
+/** Frequencies: whole hertz below 1 kHz, kilohertz with at most two decimals above. */
+export function fmtHz(hz: number): string {
+  if (Math.abs(hz) < 1000) return `${Math.round(hz * 10) / 10} Hz`;
+  return `${+(hz / 1000).toFixed(2)} kHz`;
+}
